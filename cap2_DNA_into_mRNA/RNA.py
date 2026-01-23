@@ -54,7 +54,7 @@ def main()->None:
     for fh in args.file:
         num_file+=1
         num_seq+=process_file(fh,args.out_dir)
-    print(f'Done, wrote {num_seq} DNA sequence{plural(num_seq)} in {num_file} file{plural(num_file)}.')
+    print(f'Done, wrote {num_seq} sequence{plural(num_seq)} in {num_file} file{plural(num_file)}.')
 
 if __name__=="__main__":
     main()
