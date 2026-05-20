@@ -18,3 +18,4 @@ This project calculates the frequency of each nucleotide (A, C, G, T) in a DNA s
 ## Usage
 ```bash
 python DNA.py input_file
+```
