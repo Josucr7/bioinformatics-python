@@ -16,3 +16,4 @@ The DNA sequence is provided only through input files.
 ## Usage
 ```bash
 python DNA.py input_file
+```
