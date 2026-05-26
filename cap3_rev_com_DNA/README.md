@@ -15,5 +15,5 @@ This project generates the reverse complement sequence of a DNA sequence using t
 
 ## Usage
 ```bash
-python DNA.py DNA
+python reverse.py DNA
 ```
