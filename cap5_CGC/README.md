@@ -14,5 +14,5 @@ The actual project reads FASTA Files containing DNA sequences and calculates the
 - Input FASTA file(s)
 ## Usage
 ```bash
-python DNA.py FASTA file(s)
+python cgc.py FASTA file(s)
 ```
