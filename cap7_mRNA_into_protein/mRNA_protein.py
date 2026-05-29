@@ -1,15 +1,19 @@
+#!/usr/bin/env python
+""" Translation of an mRNA sequence into a protein. """
+
 import argparse
-from typing import NamedTuple
+from typing import NamedTuple,Optional
+
 
 class Args(NamedTuple):
     """Command line-Arguments"""
 
-    mrna : str
+    mrna: str
 
 def get_args() -> Args:
     """ Get command line-arguments """
 
-    parse = argparse.ArgumentParser(description="Traduction of mRNA sequences to protein sequence.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parse = argparse.ArgumentParser(description="Translation of mRNA sequences to protein sequence.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parse.add_argument("mRNA",metavar="RNA",type=str,help="Input a mRNA sequence.")
 
@@ -17,8 +21,8 @@ def get_args() -> Args:
 
     return Args(mrna=args.mRNA)
 
-def identify_aminoacid(codon:str) -> str:
-    """ Translate the codon of nucleotides in their aminoacid """
+def identify_amino_acid(codon:str) -> Optional[str]:
+    """ Translate an RNA codon into its amino acid """
 
     rna_codon_to_aminoacid = {
         'UUU': 'F', 'UUC': 'F', 'UUA': 'L', 'UUG': 'L',
@@ -47,12 +51,12 @@ def identify_aminoacid(codon:str) -> str:
     return rna_codon_to_aminoacid[codon]
 
 def range_codons(sequence:str) -> list:
-    """ Create a range to select the codons in the sequence """
+    """ Generate to index positions for codons. """
 
     return list(range(0,len(sequence),3))
 
 def list_codons(sequence:str) -> list:
-    """ Generate a codon's list of a RNA sequence """
+    """ Generate a codon's list from an RNA sequence """
 
     num_range = range_codons(sequence)
     codons_sequence = [sequence[i:i+3].upper() for i in num_range]
@@ -60,20 +64,28 @@ def list_codons(sequence:str) -> list:
     return codons_sequence
 
 
-
-def main()->None:
+def main() -> None:
     """ Run the code """
 
     args = get_args()
     
-    codons_seguence=list_codons(args.mrna)
-    
-    protein = list(filter(None,map(identify_aminoacid,codons_seguence)))
+    codons_sequence=list(enumerate(list_codons(args.mrna)))
+    proteins = []
 
-    print(protein)
+    for number,codon in codons_sequence:
+        if codon == "AUG":
+            codons_sequence = codons_sequence[number:]
+            break
+
+    if codons_sequence and "AUG" == codons_sequence[0][1]:
+        for number,codon in codons_sequence:
+            protein = identify_amino_acid(codon)
+            if protein == "*":
+                break
+            proteins.append(protein)
+
+    print("".join(proteins))
 
 
 if __name__=="__main__":
     main()
-
-

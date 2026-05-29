@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+""" Hamming Distance of two DNA sequences. """
 
 import argparse
 from typing import NamedTuple, Optional, TextIO, Tuple

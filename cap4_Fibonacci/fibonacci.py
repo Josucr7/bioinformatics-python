@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Generate a Fibonacci sequence."""
 
 import argparse
 from typing import NamedTuple,Generator
