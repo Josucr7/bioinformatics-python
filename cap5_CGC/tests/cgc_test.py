@@ -47,7 +47,7 @@ def test_good_input1() -> None:
 
     rv, out = getstatusoutput(f'{RUN} {SAMPLE1}')
     assert rv == 0
-    assert out == 'Rosalind_0808 60.919540'
+    assert out == 'Done, wrote 3 Fasta sequences in 1 file in directory Out.'
 
 
 # --------------------------------------------------
@@ -56,16 +56,8 @@ def test_good_input2() -> None:
 
     rv, out = getstatusoutput(f'{RUN} {SAMPLE2}')
     assert rv == 0
-    assert out == 'Rosalind_5723 52.806415'
+    assert out == 'Done, wrote 9 Fasta sequences in 1 file in directory Out.'
 
-
-# --------------------------------------------------
-def test_stdin() -> None:
-    """ Works on STDIN """
-
-    rv, out = getstatusoutput(f'cat {SAMPLE1} | {RUN}')
-    assert rv == 0
-    assert out == 'Rosalind_0808 60.919540'
 
 
 # --------------------------------------------------

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Translation of an mRNA sequence into a protein. """
 
 import argparse
@@ -6,12 +6,12 @@ from typing import NamedTuple,Optional
 
 
 class Args(NamedTuple):
-    """Command line-Arguments"""
+    """ Command line-arguments. """
 
     mrna: str
 
 def get_args() -> Args:
-    """ Get command line-arguments """
+    """ Get command line-arguments. """
 
     parse = argparse.ArgumentParser(description="Translation of mRNA sequences to protein sequence.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
@@ -22,7 +22,7 @@ def get_args() -> Args:
     return Args(mrna=args.mRNA)
 
 def identify_amino_acid(codon:str) -> Optional[str]:
-    """ Translate an RNA codon into its amino acid """
+    """ Translate an RNA codon into its amino acid. """
 
     rna_codon_to_aminoacid = {
         'UUU': 'F', 'UUC': 'F', 'UUA': 'L', 'UUG': 'L',
@@ -50,13 +50,13 @@ def identify_amino_acid(codon:str) -> Optional[str]:
 
     return rna_codon_to_aminoacid[codon]
 
-def range_codons(sequence:str) -> list:
+def range_codons(sequence:str) -> list[int]:
     """ Generate to index positions for codons. """
 
     return list(range(0,len(sequence),3))
 
-def list_codons(sequence:str) -> list:
-    """ Generate a codon's list from an RNA sequence """
+def list_codons(sequence:str) -> list[str]:
+    """ Generate a list of codons from an RNA sequence. """
 
     num_range = range_codons(sequence)
     codons_sequence = [sequence[i:i+3].upper() for i in num_range]
@@ -65,13 +65,13 @@ def list_codons(sequence:str) -> list:
 
 
 def main() -> None:
-    """ Run the code """
+    """ Run the code. """
 
     args = get_args()
     
     codons_sequence=list(enumerate(list_codons(args.mrna)))
     proteins = []
-
+    
     for number,codon in codons_sequence:
         if codon == "AUG":
             codons_sequence = codons_sequence[number:]

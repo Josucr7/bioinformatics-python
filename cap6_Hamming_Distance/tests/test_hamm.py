@@ -2,17 +2,16 @@
 """Test for hamm.py"""
 
 import os 
-from pathlib import Path
 import platform 
 import random
 import re
 import string
 from subprocess import getstatusoutput
 
-PRG = Path("hamm.py")
+PRG = "./hamm.py"
 RUN = f"python {PRG}" if platform.system() == "Windows" else PRG
-INPUT1 = Path("tests/inputs/1.fa")
-INPUT2 = Path("tests/inputs/2.fa")
+INPUT1 = "./tests/inputs/1.fa"
+INPUT2 = "./tests/inputs/2.fa"
 
 def test_exist() -> None:
     """ Program exits """

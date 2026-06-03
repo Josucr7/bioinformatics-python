@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Hamming Distance of two DNA sequences. """
 
 import argparse

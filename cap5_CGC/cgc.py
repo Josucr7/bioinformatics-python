@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Content Guanine an Cytosine in Fasta Files with DNA sequences."""
 
