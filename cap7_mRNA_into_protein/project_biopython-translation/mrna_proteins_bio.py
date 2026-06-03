@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """ Translation mRNA sequence into protein using Biopython. """
 
 import argparse
@@ -37,7 +37,7 @@ def read_fasta_file(file:TextIO) -> List[str]:
 def translation(sequence:str) -> Seq:
     """ Translation mRNA sequence into protein. """
 
-    protein = Seq(sequence).translate()
+    protein = Seq(sequence).translate(to_stop=True)
     return protein
 
 def main() -> None:
