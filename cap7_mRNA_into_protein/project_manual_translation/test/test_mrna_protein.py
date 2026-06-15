@@ -20,7 +20,7 @@ def test_usage() -> None:
 
     for flag in ['-h','--help']:
         rv, out = getstatusoutput(f'{RUN} {flag}')
-        print(rv)
+        assert rv == 0
         assert re.search("usage",out)
 
 def test_not_argument() -> None:

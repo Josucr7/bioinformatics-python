@@ -1,0 +1,43 @@
+""" Test for subseq_dna.py """
+
+import platform
+from subprocess import getstatusoutput
+import os
+import re
+
+PRG = "./subseq_dna.py"
+RUN = f'python3 {PRG}' if platform.system() == "Windows" else PRG
+
+def test_exists() -> None:
+    """ Verify if the file exists. """
+
+    assert os.path.exists(PRG)
+
+def test_usage() -> None:
+    """ Verify the  usage message. """
+
+    for flag in ['-h','--help']:
+        rv, out = getstatusoutput(f"{RUN} {flag}")
+        assert rv == 0
+        assert re.search("usage:",out)
+
+def test_not_args() -> None:
+    """ Verify the output without arguments. """
+
+    rv, out = getstatusoutput(f"{RUN}")
+    assert rv != 0
+    assert re.search("usage:",out)
+
+def test_argument() -> None:
+    """ Verify the matching of a DNA subsequence in a DNA sequence. """
+
+    rv, out = getstatusoutput(f'{RUN} TCGAAACCAGAGATCACCTGAAAACCAGCCAGAAACCAGTCAAACCAGGGCGTAAACCAGTCAAAACCAGAAACCAGCGTAAACCAGAAACCAGTTTAAAACCAGAAACCAGATAAACCAGGTCAGAAACCAGCATCAAACCAGAAACCAGAAACCAGCCCTTAAACCAGAAACCAGAAAACCAGCGCAAAACCAGTGAAAACCAGGAAACCAGAAACCAGCTCAAAACCAGAAAAACCAGAAACCAGAAACCAGTAAAACCAGCCGTAAACCAGCTAAACCAGAAAACCAGCTACAAACCAGAAACCAGCAAACCAGCAATGAAAACCAGACCAGAAACCAGCTAAAAACCAGGAGAGAAACCAGTAAACCAGAGCTTAAACCAGAAAACCAGAAACCAGTCAAACCAGAAAACCAGCAAACCAGATTGAAAACCAGAAACCAGCAAAACCAGGAAACCAGTAGATTGAAACCAGAAACCAGACTTATACAAACCAGTACATGGGCTCTAACAAACCAGCCTATGGCTGTGTGGATAAACCAGAAACCAGAATAAACCAGGGGCCAAACCAGGCGTAAACCAGGCTGAAACCAGAAACCAGAAACCAGCAAAACCAGCCGTTTTGCTCGAAACCAGGAAAACCAGAAACCAGCCAATAAACCAGAAACCAGGGAAACCAGGGCAAAACCAGTAAACCAGGCATAAACCAGCCCCGAAAAACCAGTTCTTAAACCAGGATCGATAAAACCAGTATAAAACCAGGAGTAAACCAGGAAACCAGGGACAAACCAGCTAAACCAGGTGAAACCAGGAAACCAGAAACCAGACTTAAACCAGGAAACCAGGTATGAAACCAGTAAAAACCAGGGAAAACCAGAAACCAGAAACCAGCCTAAACCAGTAAACCAGAAACCAGGAAACCAGAGAAACCAG AAACCAGAA')
+    assert rv == 0
+    assert out == '[64, 81, 99, 138, 145, 164, 171, 208, 226, 235, 242, 278, 297, 380, 388, 404, 432, 470, 538, 545, 589, 596, 640, 659, 814, 872, 879, 904]'
+
+def test_bad_argument() -> None:
+    """ Verify the output for an non-matching DNA sequence. """
+
+    rv, out = getstatusoutput(f'{RUN} GATATATGCATATACTT XVZ')
+    assert rv == 0
+    assert out == 'None'
