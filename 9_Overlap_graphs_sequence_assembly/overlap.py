@@ -56,7 +56,7 @@ def match_sequences(seq1:list,seq2:list) -> Optional[list[str]]:
     """ Check whether two sequences overlap. """
 
     if seq1[1][0] == seq2[1][1]:
-        return [seq1[0],seq2[0]]
+        return [seq2[0],seq1[0]]
     
 def build_overlap_data(fasta:TextIO,k_mers:int) -> Tuple[
     dict[str, list[str]],
@@ -125,7 +125,8 @@ def main()->None:
 
     create_graph(overlap,outfile=args.outfile.name,view=args.view)
 
-    print(pformat(overlap))
+    for pair in overlap:
+            print(pformat(pair))
 
     
 if __name__ == "__main__":
