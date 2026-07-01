@@ -28,7 +28,7 @@ def get_args() -> Args:
 
     parse.add_argument('-d','--debug',help="Debug",action='store_true')
 
-    parse.add_argument('-o','--outfile',metavar='FILE',help="Output file name",type=argparse.FileType("wt"),default='graph_out.txt')
+    parse.add_argument('-o','--outfile',metavar='FILE',help="Output file name",default='graph_out')
 
     parse.add_argument('-v','--view',help="Display graphic.",action='store_true')
     
@@ -108,7 +108,7 @@ def create_graph(overlap:list,outfile,view:bool)->None:
         dot.node(seq_ids[0])
         dot.node(seq_ids[1])
         dot.edge(seq_ids[0],seq_ids[1])
-    dot.render(outfile,view=view)
+    dot.render(outfile,view=view,cleanup=True)
 
 def main()->None:
     """ Run the code. """
@@ -123,7 +123,7 @@ def main()->None:
 
     overlap = find_overlaps(sequences)
 
-    create_graph(overlap,outfile=args.outfile.name,view=args.view)
+    create_graph(overlap,outfile=args.outfile,view=args.view)
 
     for pair in overlap:
             print(pformat(pair))
