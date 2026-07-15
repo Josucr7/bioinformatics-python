@@ -10,7 +10,7 @@ Finally, it can generate a graph to visualize the overlaps and create a log file
 - Using argparse to handle command-line arguments.
 - Reading FASTA file.
 - Extracting the first and last k-mers from sequences.
-- Finding overlpa between seqquences.
+- Finding overlap between seqquences.
 - Grouping Sequences by overlapping k-mers.
 - Generating log files using logging levels.
 - Visualizing overlap graphs with Graphviz.
