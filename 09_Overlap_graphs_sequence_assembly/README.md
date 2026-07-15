@@ -7,9 +7,6 @@ It then identifies overlaps between all sequences.
 Finally, it can generate a graph to visualize the overlaps and create a log file containing information about the extracted k-mers.
 
 ## Concepts Practiced
-
-
-## Concepts Practiced
 - Using argparse to handle command-line arguments.
 - Reading FASTA file.
 - Extracting the first and last k-mers from sequences.
