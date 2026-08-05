@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from typing import NamedTuple, TextIO, List, Tuple
+from typing import NamedTuple, TextIO, List, Tuple, Optional
 import argparse
 import subprocess
 from Bio import SeqIO
 import re
-from pprint import pformat
+
 class Args(NamedTuple):
     """Command-line Arguments."""
 
@@ -14,7 +14,7 @@ class Args(NamedTuple):
 def get_args() -> Args:
     """ Get command-line Arguments. """
 
-    parse = argparse.ArgumentParser(argument_default="Finding the protein N-glycosylation motif of a FASTA file contains lists ID protein.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parse = argparse.ArgumentParser(argument_default="Finding protein N-glycosylation motifs from a file containing protein IDs.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parse.add_argument('file',help="Input a FASTA file with ID proteins.",metavar='FILE',type=argparse.FileType('rt'))
 
@@ -25,7 +25,7 @@ def get_args() -> Args:
     return Args(file=args.file,out_file=args.download_dir)
 
 def download_sequences_proteins(file:str,directory:str) -> str:
-    """ Download aminoacid sequences from a file that contains ID proteins. """
+    """ Download protein amino acid sequences from a file containing protein IDs. """
     
     result = subprocess.run(
         ["bash","script.sh",file,directory],
@@ -34,42 +34,44 @@ def download_sequences_proteins(file:str,directory:str) -> str:
     )
     return result.stdout
 
-def return_ID_proteins(file:TextIO) -> str:
-    """ Get ID proteins from a file. """
+def return_ID_proteins(file:TextIO) -> List[str]:
+    """ Get protein IDs from a file. """
 
     proteins = [prot_id for prot_id in map(str.rstrip,file)]
     return proteins
 
-def get_sequenece_protein(directory:str,id:str) -> List[str]:
-    """ Get sequence protein from a FASTA file. """
+def get_sequence_protein(directory:str,id:str) -> Optional[str]:
+    """ Get a protein sequence from a FASTA file. """
 
     out_file=f"test/{directory}/{id}.fasta"
     records = SeqIO.parse(out_file,'fasta')
-    sequence=[str(record.seq) for record in records]
-    return sequence
+    if rec := next(records,None):
+        return str(rec.seq)
 
-def glycosylation_motif(seq:str) -> Tuple[List[str],List[int]]:
-    """ Find N-glycosylation motif from a protein sequence. """
-    regex = re.compile(('N[^P][ST][^P]'))
+    return None
+
+def glycosylation_motif(seq:str) -> Optional[Tuple[List[str],List[int]]]:
+    """ Find N-glycosylation motifs in a protein sequence. """
+    regex = re.compile('(?=(N[^P][ST][^P]))')
     coincidence = regex.findall(seq)
     locations = [match.start()+1 for match in regex.finditer(seq)]
-    return coincidence,locations
-
+    if coincidence and locations:
+        return coincidence,locations
+    return None
 
 def main() -> None:
     """ Run the code. """
     args = get_args()
     prot_ids = return_ID_proteins(args.file)
-    for prot_id in prot_ids:
-        print(f'http://www.uniprot.org/uniprot/{prot_id}.fasta')
-
     result = download_sequences_proteins(file=args.file.name,directory=args.out_file)
     print(result)
     for id in prot_ids:
-        sequences=get_sequenece_protein(directory=args.out_file,id=id)
-        for seq in sequences:
-            ans = glycosylation_motif(seq)
-            print(ans)
+        seq=get_sequence_protein(directory=args.out_file,id=id)
+        if seq is not None:
+            if ans := glycosylation_motif(seq):
+                print(id)
+                print(*ans[0])
+                print(*ans[1])
 
 if __name__=="__main__":
     main()
