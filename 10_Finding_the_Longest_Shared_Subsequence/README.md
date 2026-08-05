@@ -1,6 +1,6 @@
 # Finding the Longest Shared Subsequences
 ## Description
-This poyect reads a FASTA file and finds the shared subsequences present in all DNA sequences.
+This project reads a FASTA file and finds the shared subsequences present in all DNA sequences.
 The program extracts all possible k-mers from each sequence and compares them to identify the k-mers shared by every sequence. Finally, it prints the longest shared subsequences to the terminal.
 
 ## Concepts Practiced
