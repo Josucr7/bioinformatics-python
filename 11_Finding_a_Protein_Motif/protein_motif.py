@@ -10,6 +10,7 @@ class Args(NamedTuple):
 
     file: TextIO
     out_file:str
+    sequence:bool
 
 def get_args() -> Args:
     """ Get command-line Arguments. """
@@ -20,9 +21,11 @@ def get_args() -> Args:
 
     parse.add_argument('-d','--download_dir',help='Directory for downloads',metavar='DIR',type=str,default='fasta')
 
+    parse.add_argument('-v','--view',help='Display sequences',action='store_true')
+
     args = parse.parse_args()
 
-    return Args(file=args.file,out_file=args.download_dir)
+    return Args(file=args.file,out_file=args.download_dir,sequence=args.view)
 
 def download_sequences_proteins(file:str,directory:str) -> str:
     """ Download protein amino acid sequences from a file containing protein IDs. """
@@ -70,8 +73,9 @@ def main() -> None:
         if seq is not None:
             if ans := glycosylation_motif(seq):
                 print(id)
-                print(*ans[0])
                 print(*ans[1])
+                if args.sequence==True:
+                    print(*ans[0])
 
 if __name__=="__main__":
     main()
