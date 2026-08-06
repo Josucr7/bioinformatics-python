@@ -3,6 +3,7 @@
 import argparse
 from typing import NamedTuple,TextIO
 import os
+import math
 
 class Args(NamedTuple):
     """ Command lina-arguments. """
@@ -51,18 +52,30 @@ aa_to_mrna = {
 }
 
 def detect_codon(aa:str) -> int:
-    """ From a aminoacid detect the posible combinations. """
+    """ From a amino acid detect the posible codon's combinations . """
 
     if aa.upper() in aa_to_mrna:
         return len(aa_to_mrna[aa.upper()])
 
+def posibles_mrna(seq:str) -> list:
+    """ Detect every posible codon for a sequences, there add the stop codons. """
+
+    values = [detect_codon(aa) for aa in seq]
+    values.append(3)
+    return values
+
+def product(values:list) -> int:
+    """ Calculate the number of combinations of every codon to mrna. """
+
+    return math.prod(values)
 
 def main() -> None:
     """ Run code. """
 
     args = get_args ()
-    value = detect_codon(args.protein)
-    print(value)
+    values = posibles_mrna(args.protein)
+    result = product(values)
+    print(result)
 
 if __name__ == "__main__":
     main()
