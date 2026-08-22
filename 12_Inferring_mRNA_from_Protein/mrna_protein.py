@@ -6,14 +6,14 @@ import os
 import math
 from functools import reduce
 class Args(NamedTuple):
-    """ Command lina-arguments. """
+    """ Command line-arguments. """
 
     protein: str
     modulo: int
     all:bool
 
 def get_args() -> Args:
-    """ Get command line arguments. """
+    """ Get command line-arguments. """
 
     parse = argparse.ArgumentParser(description='Find the number of mRNA could produce a given protein sequence.',formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
