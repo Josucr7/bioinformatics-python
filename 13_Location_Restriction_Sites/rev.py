@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from typing import NamedTuple, TextIO
+from typing import NamedTuple, TextIO, Optional
 from Bio import SeqIO, Seq
 
 class Args(NamedTuple):
@@ -31,6 +31,13 @@ def reverse_complement(seq:str):
 
     return Seq.reverse_complement(seq)
 
+def k_mers(sequence:str,k:int) -> Optional[str]:
+    """ Get k-mers from a DNA sequences. """
+
+    n = len(sequence) + 1 - k
+    return [] if n < 1 else [sequence[i:i+k] for i in range(n)]
+     
+
 def main():
     """ Run code """
 
@@ -39,6 +46,7 @@ def main():
     seq = read_fasta_file(args.file)
     rev = reverse_complement(seq)
     print(rev)
+    print(k_mers(seq,3))
 
 if __name__ == "__main__":
     main()
