@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from typing import NamedTuple, TextIO, Optional, List
+from typing import NamedTuple, TextIO, Optional, List, Tuple
 from Bio import SeqIO, Seq
 
 class Args(NamedTuple):
@@ -20,13 +20,16 @@ def get_args() -> Args:
 
     return Args(file=args.file)
 
-def read_fasta_file(file:TextIO) -> str:
+def read_fasta_file(file:TextIO) -> Optional[str]:
     """ Read a fasta file. """
 
     rec = SeqIO.parse(file,"fasta")
-    return str(next(rec).seq)
+    sequence = next(rec,None)
+    if sequence is not None:
+        return str(sequence.seq)
+    return None
 
-def reverse_complement(seq:str):
+def reverse_complement(seq:str) -> str:
     """ Generate the reverse complement sequences. """
 
     return Seq.reverse_complement(seq)
@@ -37,22 +40,25 @@ def k_mers(sequence:str,k:int) -> Optional[List]:
     n = len(sequence) + 1 - k
     return [] if n < 1 else [sequence[i:i+k] for i in range(n)]
 
-def compare_kmer(k_mers:list) -> Optional[List]:
+def compare_kmer(k_mers:list) -> Optional[List[List]]:
     """ Detect if k-mers has equality from sequences.. """
 
     reverse = [reverse_complement(k_mer) for k_mer in k_mers]
     base = list(enumerate(zip(k_mers,reverse),start=1))
-    positions = [(position,len(sequences[0])) for position,sequences in base if sequences[0]==sequences[1]] 
+    positions = [[position,len(sequences[0])] for position,sequences in base if sequences[0]==sequences[1]] 
     if not positions:
         return None
     return positions
-def main():
-    """ Run code """
 
+def main() -> None:
+    """ Run code """
     args = get_args()
     sequence = read_fasta_file(args.file)
-    sites=[ site for i in range(4,len(sequence)) if (site:=compare_kmer(k_mers(sequence,i))) is not None]
+    if sequence is None:
+        return None
+    sites=[site for i in range(4,len(sequence)) if (site:=compare_kmer(k_mers(sequence,i))) is not None]
     for site in sites:
-        print(site)
+        for pair in site:
+            print(*pair)
 if __name__ == "__main__":
     main()
