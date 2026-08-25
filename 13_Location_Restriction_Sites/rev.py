@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
-from typing import NamedTuple, TextIO, Optional, List, Tuple
+from typing import NamedTuple, TextIO, Optional, List
 from Bio import SeqIO, Seq
 
 class Args(NamedTuple):
@@ -12,7 +12,7 @@ class Args(NamedTuple):
 def get_args() -> Args:
     """ Get command line-arguments """
 
-    parser = argparse.ArgumentParser(description="Locating Restriction Files.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description="Locating Restriction Sites.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('file',metavar="FILE",help="Input a FASTA file.",type=argparse.FileType("rt"))
 
@@ -34,29 +34,29 @@ def reverse_complement(seq:str) -> str:
 
     return Seq.reverse_complement(seq)
 
-def k_mers(sequence:str,k:int) -> Optional[List]:
-    """ Get k-mers from a DNA sequences. """
+def k_mers(sequence:str,k:int) -> List[str]:
+    """ Get k-mers from a DNA sequence. """
 
     n = len(sequence) + 1 - k
     return [] if n < 1 else [sequence[i:i+k] for i in range(n)]
 
-def compare_kmer(k_mers:list) -> Optional[List[List]]:
-    """ Detect if k-mers has equality from sequences.. """
+def compare_kmer(kmers:List[str]) -> Optional[List[List[int]]]:
+    """ Detect k-mers that are equal to their reverse complement. """
 
-    reverse = [reverse_complement(k_mer) for k_mer in k_mers]
-    base = list(enumerate(zip(k_mers,reverse),start=1))
+    reverse = [reverse_complement(kmer) for kmer in kmers]
+    base = list(enumerate(zip(kmers,reverse),start=1))
     positions = [[position,len(sequences[0])] for position,sequences in base if sequences[0]==sequences[1]] 
     if not positions:
         return None
     return positions
 
 def main() -> None:
-    """ Run code """
+    """ Run code. """
     args = get_args()
     sequence = read_fasta_file(args.file)
     if sequence is None:
         return None
-    sites=[site for i in range(4,len(sequence)) if (site:=compare_kmer(k_mers(sequence,i))) is not None]
+    sites=[site for i in range(4,len(sequence)+1) if (site:=compare_kmer(k_mers(sequence,i))) is not None]
     for site in sites:
         for pair in site:
             print(*pair)
