@@ -30,23 +30,26 @@ def read_fasta_file(file:TextIO) -> Optional[str]:
         return str(sequence.seq)
     return None
 
-def dna_to_aa(dna:str) -> Tuple[str]:
+def dna_to_aa(dna:str) -> List[str]:
     """ From DNA sequence translate to aminoacid sequence.  """
     rna = Seq.transcribe(dna)
     rna_reverse = Seq.reverse_complement_rna(rna)
-    aa = Seq.translate(rna)
-    aa_1 = Seq.translate(rna[1:])
-    aa_2 = Seq.translate(rna[2:])
-    aar = Seq.translate(rna_reverse)
-    aar_1 = Seq.translate(rna_reverse[1:])
-    aar_2 = Seq.translate(rna_reverse[2:])
-    return aa,aar,aa_1,aar_1,aa_2,aar_2
+    aa = []
+    for seq in rna,rna_reverse:
+        for i in range(3):
+            if prot := Seq.translate(truncate(seq[i:],3)):
+                aa.append(prot)
+
+    return aa
 
 def truncate(seq: str, k: int) -> str:
     """ Truncate a sequence to even division by k """
 
-    return ''
-def find_orfs(aa: str) -> List[str]:
+    length = len(seq)
+    end = length - (length % k)
+    return seq[:end]
+    
+def find_orfs(aa: str) -> str:
     """ Find ORFs in AA sequence """
 
     regex = re.compile('(?=(M[A-Z]*[*$]))')
@@ -59,9 +62,12 @@ def main() -> None:
     args = get_args()
     sequence = read_fasta_file(args.file)
     aa = dna_to_aa(sequence)
-    orf = [find_orfs(seq) for seq in aa ] 
-    result = set(itertools.chain.from_iterable(orf))
-    print(*result)
+    orfs = set()
+    for sequence in aa:
+        for orf in (find_orfs(sequence)):
+            orfs.add(orf)
+    
+    print(*orfs,'\n')
 
 if __name__ == "__main__":
     main()
