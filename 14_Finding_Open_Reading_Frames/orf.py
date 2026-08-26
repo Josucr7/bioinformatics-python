@@ -52,7 +52,7 @@ def truncate(seq: str, k: int) -> str:
 def find_orfs(aa: str) -> str:
     """ Find ORFs in AA sequence """
 
-    regex = re.compile('(?=(M[A-Z]*[*$]))')
+    regex = re.compile('(?=(M[A-Z]*)[*])')
     coincidence = regex.findall(aa)
     return coincidence
 
@@ -61,13 +61,17 @@ def main() -> None:
 
     args = get_args()
     sequence = read_fasta_file(args.file)
+    if sequence is None:
+        return None
     aa = dna_to_aa(sequence)
     orfs = set()
+    
     for sequence in aa:
         for orf in (find_orfs(sequence)):
             orfs.add(orf)
     
-    print(*orfs,'\n')
+    for orf in sorted(orfs):
+        print(orf)
 
 if __name__ == "__main__":
     main()
