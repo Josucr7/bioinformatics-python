@@ -1,28 +1,27 @@
 #!/usr/bin/env python3
 import argparse
-from typing import NamedTuple, TextIO, Optional, Tuple, List
+from typing import NamedTuple, TextIO, Optional, List
 from Bio import SeqIO, Seq
 import re
-import itertools
 
 class Args(NamedTuple):
-    """ Command line-Arguments."""
+    """ Command line Arguments."""
 
     file: TextIO
 
 def get_args() -> Args:
-    """ Get command line-Arguments. """
+    """ Get command-line arguments. """
 
-    parse = argparse.ArgumentParser(description="Detect region of nucleotides that transcribe amino acid sequences.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description="Detect region of nucleotides that transcribe amino acid sequences.",formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parse.add_argument("file",metavar="FILE",help="Input a FASTA file.",type=argparse.FileType('rt'))
+    parser.add_argument("file",metavar="FILE",help="Input a FASTA file.",type=argparse.FileType('rt'))
 
-    args = parse.parse_args()
+    args = parser.parse_args()
     
     return Args(file=args.file)
 
 def read_fasta_file(file:TextIO) -> Optional[str]:
-    """ Read a fasta file. """
+    """ Read a FASTA file. """
 
     records = SeqIO.parse(file,"fasta")
     sequence = next(records,None)
@@ -31,7 +30,7 @@ def read_fasta_file(file:TextIO) -> Optional[str]:
     return None
 
 def dna_to_aa(dna:str) -> List[str]:
-    """ From DNA sequence translate to aminoacid sequence.  """
+    """ Translate a DNA sequence into amino acid sequences.  """
     rna = Seq.transcribe(dna)
     rna_reverse = Seq.reverse_complement_rna(rna)
     aa = []
@@ -43,13 +42,13 @@ def dna_to_aa(dna:str) -> List[str]:
     return aa
 
 def truncate(seq: str, k: int) -> str:
-    """ Truncate a sequence to even division by k """
+    """Truncate a sequence to be evenly divisible by k."""
 
     length = len(seq)
     end = length - (length % k)
     return seq[:end]
     
-def find_orfs(aa: str) -> str:
+def find_orfs(aa: str) -> List[str]:
     """ Find ORFs in AA sequence """
 
     regex = re.compile('(?=(M[A-Z]*)[*])')
@@ -67,7 +66,7 @@ def main() -> None:
     orfs = set()
     
     for sequence in aa:
-        for orf in (find_orfs(sequence)):
+        for orf in find_orfs(sequence):
             orfs.add(orf)
     
     for orf in sorted(orfs):
