@@ -67,10 +67,8 @@ def main () -> None:
     args = get_args()
     hdr = ['name','min_len','max_len','avg_len','num_seqs']
     dates = [process(fh) for fh in args.file]
-    print(tabulate(dates,headers=hdr, tablefmt='plain', floatfmt='.2f'))
-    #for fh in args.file:
-        #print(read_fasta_file(fh))
-    
+    print(tabulate(dates,headers=hdr, tablefmt=args.tablefmt, floatfmt='.2f'))
+
 
 if __name__ == "__main__":
     main()
