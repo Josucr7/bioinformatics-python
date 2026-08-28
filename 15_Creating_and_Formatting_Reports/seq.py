@@ -56,10 +56,6 @@ def process(fh:TextIO) -> str:
             num_seqs=len(lenghts)
         )
 
-    hdr = ['name','min_len','max_len','avg_len','num_seqs']
-    f1 = ['tests/inputs/1.fa', 50, 50, 50.00, 1]
-    f2 = ['tests/inputs/2.fa', 49, 79, 64.00, 5]
-
 
 def main () -> None:
     """Run code. """
