@@ -46,14 +46,15 @@ def read_fasta_file(file: TextIO)->Optional[List[str]]:
 def process(fh:TextIO) -> str:
     """Process file"""
 
-    if lenghts:= [len(rec) for rec in read_fasta_file(fh)]:
-        return FastaInfo(
-            filename=fh.name,
-            min_len=min(lenghts),
-            max_len=max(lenghts),
-            avg_len=round(float(np.mean(lenghts)), 2),
-            num_seqs=len(lenghts)
-        )
+    if rec := read_fasta_file(fh):
+        if lenghts:= [len(seq) for seq in rec]:
+            return FastaInfo(
+                filename=fh.name,
+                min_len=min(lenghts),
+                max_len=max(lenghts),
+                avg_len=round(float(np.mean(lenghts)), 2),
+                num_seqs=len(lenghts)
+            )
     return FastaInfo(
                 filename=fh.name,
                 min_len=0,
@@ -67,6 +68,8 @@ def main () -> None:
     hdr = ['name','min_len','max_len','avg_len','num_seqs']
     dates = [process(fh) for fh in args.file]
     print(tabulate(dates,headers=hdr, tablefmt='plain', floatfmt='.2f'))
+    #for fh in args.file:
+        #print(read_fasta_file(fh))
     
 
 if __name__ == "__main__":
