@@ -6,7 +6,7 @@ from Bio import SeqIO
 import numpy as np
 
 class Args(NamedTuple):
-    """ Command line arguments. """
+    """ Command-line arguments. """
 
     file: List[TextIO]
     
@@ -23,13 +23,13 @@ class FastaInfo(NamedTuple):
 
 
 def get_args() -> Args:
-    """ Get command line arguments. """
+    """ Get command-line arguments. """
 
-    parser = argparse.ArgumentParser(description='Mimic seqmagick',formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Mimic SeqMagick',formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     parser.add_argument('file',metavar="FILE",help="Input FASTA file(s).",nargs='+',type=argparse.FileType('rt'))
 
-    parser.add_argument('-t','--tablefmt',metavar='table',type=str,help="Tabulate table style", choices=['plain', 'simple', 'grid', 'pipe', 'orgtbl', 'rst','mediawiki', 'latex', 'latex_raw', 'latex_booktabs'],default='plain')
+    parser.add_argument('-t','--tablefmt',metavar='TABLE',type=str,help="Table format", choices=['plain', 'simple', 'grid', 'pipe', 'orgtbl', 'rst','mediawiki', 'latex', 'latex_raw', 'latex_booktabs'],default='plain')
 
     args = parser.parse_args()
 
@@ -43,17 +43,17 @@ def read_fasta_file(file: TextIO)->Optional[List[str]]:
         return seq
     return None   
 
-def process(fh:TextIO) -> str:
-    """ Process file to tabulation. """
+def process(fh:TextIO) -> FastaInfo:
+    """ Process a FASTA file and return its statistics. """
 
     if rec := read_fasta_file(fh):
-        if lenghts:= [len(seq) for seq in rec]:
+        if lengths:= [len(seq) for seq in rec]:
             return FastaInfo(
                 filename=fh.name,
-                min_len=min(lenghts),
-                max_len=max(lenghts),
-                avg_len=round(float(np.mean(lenghts)), 2),
-                num_seqs=len(lenghts)
+                min_len=min(lengths),
+                max_len=max(lengths),
+                avg_len=round(float(np.mean(lengths)), 2),
+                num_seqs=len(lengths)
             )
     return FastaInfo(
                 filename=fh.name,
