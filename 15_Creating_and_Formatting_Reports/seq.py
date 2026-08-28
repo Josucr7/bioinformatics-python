@@ -35,11 +35,10 @@ def get_args() -> Args:
 
     return Args(file=args.file,tablefmt=args.tablefmt)
 
-def read_fasta_file(file: TextIO)->Optional[str]:
+def read_fasta_file(file: TextIO)->Optional[List[str]]:
     """ Read a FASTA file. """
     
-    for fh in file:
-        seq = [sequence for sequence in SeqIO.parse(fh,'fasta')]
+    seq = [str(sequence.seq) for sequence in SeqIO.parse(file,'fasta')]
     if seq:
         return seq
     return None   
@@ -47,7 +46,7 @@ def read_fasta_file(file: TextIO)->Optional[str]:
 def process(fh:TextIO) -> str:
     """Process file"""
 
-    if lenghts:= [len(rec.seq) for rec in read_fasta_file(fh)]:
+    if lenghts:= [len(rec) for rec in read_fasta_file(fh)]:
         return FastaInfo(
             filename=fh.name,
             min_len=min(lenghts),
@@ -55,15 +54,20 @@ def process(fh:TextIO) -> str:
             avg_len=round(float(np.mean(lenghts)), 2),
             num_seqs=len(lenghts)
         )
-
+    return FastaInfo(
+                filename=fh.name,
+                min_len=0,
+                max_len=0,
+                avg_len=0.,
+                num_seqs=0)
 
 def main () -> None:
     """Run code. """
     args = get_args()
     hdr = ['name','min_len','max_len','avg_len','num_seqs']
-    f1 = ['tests/inputs/1.fa', 50, 50, 50.00, 1]
-    f2 = ['tests/inputs/2.fa', 49, 79, 64.00, 5]
-    #print(tabulate([f1,f2],headers=hdr, tablefmt='plain', floatfmt='.2f'))
-    print(read_fasta_file(args.file))
+    dates = [process(fh) for fh in args.file]
+    print(tabulate(dates,headers=hdr, tablefmt='plain', floatfmt='.2f'))
+    
+
 if __name__ == "__main__":
     main()
