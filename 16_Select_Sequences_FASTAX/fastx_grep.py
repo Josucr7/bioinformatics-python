@@ -14,7 +14,7 @@ class Args(NamedTuple):
     pattern: str
     input_format: str
     output_format: str
-    output: TextIO
+    outfile: TextIO
     insensitive: bool
 
 def get_args() -> Args:
@@ -36,7 +36,7 @@ def get_args() -> Args:
 
     args = parser.parse_args()
 
-    return Args(file = args.file, pattern = args.pattern, input_format = args.format, output_format = args.outfmt, output = args.outfile, insensitive = args.insensitive)
+    return Args(file = args.file, pattern = args.pattern, input_format = args.format, output_format = args.outfmt, outfile = args.outfile, insensitive = args.insensitive)
 
 def guess_format(filename: str) -> Optional[str]:
     """ Guess format from specific extension. """
@@ -44,24 +44,37 @@ def guess_format(filename: str) -> Optional[str]:
     format = re.sub('^[.]','',os.path.splitext(filename)[1])
     return 'fasta' if re.match('f(ast|n|a)?a$',format) else 'fastq' if re.match('f(ast)?q$',format) else None
 
-def read_fasta_file(fh: TextIO, frt: Optional[str]=None) -> Optional[str]:
-    """ Read a FASTA file. """
+def read_fast_file(fh: TextIO, frt: Optional[str]=None) -> Optional[str]:
+    """ Read a file depends of format. """
 
     if frt is None:
         return None
     seq = SeqIO.parse(fh, frt)
-    return next(seq, None)
-    
+    return next(seq, None)    
 
+def write_fast_file(rec:TextIO, outfile:str, frt:str) -> TextIO:
+    """ Write a file dpeends of format. """
+
+    SeqIO.write(rec, outfile, frt)
 
 def main() -> None:
     """ Run code. """
 
     args = get_args()
-    files = args.file
-    for x in files:
-        res = (guess_format(x.name))
-        print(read_fasta_file(x,res))
+    regex = re.compile(args.pattern,re.IGNORECASE if args.insensitive else 0)
+
+    for fh in args.files:
+        input_format = args.input_format or guess_format(fh.name)
+
+        if not input_format:
+            sys.exit(f'Please specify file format for {fh.name}')
+
+        output_format = args.output_format or input_format
+
+        for rec in read_fast_file(fh,input_format):
+            if any(map(regex.search,[rec.id, rec.description])):
+                write_fast_file(rec,args.outfile,output_format)
+
 
 if __name__ == "__main__":
     main() 
