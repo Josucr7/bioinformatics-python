@@ -32,7 +32,7 @@ def get_args() -> Args:
 
     parser.add_argument('-o', '--outfile', help='Output file', type=argparse.FileType('wt'), metavar='FILE', default=sys.stdout)
 
-    parser.add_argument('-i', '--insensitive', metavar="bool",help="Case-insensitive search", default=False)
+    parser.add_argument('-i', '--insensitive',help="Case-insensitive search", action="store_true")
 
     args = parser.parse_args()
 
@@ -44,15 +44,15 @@ def guess_format(filename: str) -> Optional[str]:
     format = re.sub('^[.]','',os.path.splitext(filename)[1])
     return 'fasta' if re.match('f(ast|n|a)?a$',format) else 'fastq' if re.match('f(ast)?q$',format) else None
 
-def read_fast_file(fh: TextIO, frt: Optional[str]=None) -> Optional[str]:
+def read_fast_file(fh: TextIO, frt: Optional[str]=None) -> Optional[TextIO]:
     """ Read a file depends of format. """
 
     if frt is None:
         return None
     seq = SeqIO.parse(fh, frt)
-    return next(seq, None)    
+    return seq
 
-def write_fast_file(rec:TextIO, outfile:str, frt:str) -> TextIO:
+def write_fast_file(rec:TextIO, outfile:str, frt:str) -> None:
     """ Write a file dpeends of format. """
 
     SeqIO.write(rec, outfile, frt)
@@ -63,11 +63,11 @@ def main() -> None:
     args = get_args()
     regex = re.compile(args.pattern,re.IGNORECASE if args.insensitive else 0)
 
-    for fh in args.files:
+    for fh in args.file:
         input_format = args.input_format or guess_format(fh.name)
 
         if not input_format:
-            sys.exit(f'Please specify file format for {fh.name}')
+            sys.exit(f'Please specify file format for "{fh.name}"')
 
         output_format = args.output_format or input_format
 
