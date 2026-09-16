@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
-from typing import NamedTuple, TextIO, List
+from typing import NamedTuple, TextIO, List, Optional
 import sys
 import re
 import os
+from Bio import SeqIO
 
 class Args(NamedTuple):
     """ Command-line Arguments. """
@@ -37,19 +38,30 @@ def get_args() -> Args:
 
     return Args(file = args.file, pattern = args.pattern, input_format = args.format, output_format = args.outfmt, output = args.outfile, insensitive = args.insensitive)
 
-def guess_format(filename: str) -> str:
+def guess_format(filename: str) -> Optional[str]:
     """ Guess format from specific extension. """
     
     format = re.sub('^[.]','',os.path.splitext(filename)[1])
-    return 'fasta' if re.match('f(ast|n|a)?a$',format) else 'fastq' if re.match('f(ast)?q$',format) else ''
+    return 'fasta' if re.match('f(ast|n|a)?a$',format) else 'fastq' if re.match('f(ast)?q$',format) else None
+
+def read_fasta_file(fh: TextIO, frt: Optional[str]=None) -> Optional[str]:
+    """ Read a FASTA file. """
+
+    if frt is None:
+        return None
+    seq = SeqIO.parse(fh, frt)
+    return next(seq, None)
+    
+
 
 def main() -> None:
     """ Run code. """
 
     args = get_args()
-    file = args.file
-    for x in file:
-        print(guess_format(x.name))
+    files = args.file
+    for x in files:
+        res = (guess_format(x.name))
+        print(read_fasta_file(x,res))
 
 if __name__ == "__main__":
     main() 
