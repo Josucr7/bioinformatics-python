@@ -3,6 +3,8 @@
 import argparse
 from typing import NamedTuple, TextIO, List
 import sys
+import re
+import os
 
 class Args(NamedTuple):
     """ Command-line Arguments. """
@@ -33,14 +35,21 @@ def get_args() -> Args:
 
     args = parser.parse_args()
 
-    return Args(file=args.file, pattern=args.pattern, input_format=args.f, output_format=args.O, output=args.o, insensitive=args.i)
+    return Args(file = args.file, pattern = args.pattern, input_format = args.format, output_format = args.outfmt, output = args.outfile, insensitive = args.insensitive)
+
+def guess_format(filename: str) -> str:
+    """ Guess format from specific extension. """
+    
+    format = re.sub('^[.]','',os.path.splitext(filename)[1])
+    return 'fasta' if re.match('f(ast|n|a)?a$',format) else 'fastq' if re.match('f(ast)?q$',format) else ''
 
 def main() -> None:
     """ Run code. """
 
     args = get_args()
-
-    return args
+    file = args.file
+    for x in file:
+        print(guess_format(x.name))
 
 if __name__ == "__main__":
     main() 
