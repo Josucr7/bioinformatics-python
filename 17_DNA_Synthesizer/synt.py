@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
-from typing import NamedTuple, TextIO, List, Optional
+from typing import NamedTuple, TextIO, List, Optional, Dict
 import random
+from Bio import SeqIO
+from collections import Counter
+
 
 class Args(NamedTuple):
     """ Command line arguments. """
@@ -15,6 +18,12 @@ class Args(NamedTuple):
     m_min: int
     k_kmer:int
     seed: Optional[int]
+
+class Markov(NamedTuple):
+    """ Machine Learning. """
+    
+
+    
 
 def get_args() -> Args:
     """ Get command line arguments. """
@@ -40,12 +49,50 @@ def get_args() -> Args:
 
     return Args(file=args.file, out_file=args.out_file, input_format=args.format, number= args.number, x_max=args.max, m_min=args.min, k_kmer=args.kmer, seed=args.seed)
 
+
+def read_file(file: TextIO, frt: str)  :
+    """ Read the file depends the format. """
+
+    seq = [str(sequences.seq) for sequences in SeqIO.parse(file,'fasta')]
+    return seq
+
+def find_kmers(seq: str, k:int) -> List[str]:
+    """ Find k-mers in a sequence. """
+
+    k_mers = [seq[i:i+k] for i in range(len(seq)-k+1)]
+    return k_mers
+
+def read_training(seq:str, k:int) -> Dict[str,Dict[str,float]]:
+    """ Tranining sequences, return dict of chains. """
+
+    kmers = find_kmers(seq,k)
+
+    chain = {}
+    for i in range(len(kmers)-1):
+        if kmers[i] in chain:
+            chain[kmers[i]].append(kmers[i+1][-1])
+        else:
+            chain[kmers[i]]=[]
+            chain[kmers[i]].append(kmers[i+1][-1])
+
+    for key,value in chain.items():
+        choices = Counter(value)
+        total = choices.total()
+        porcent = {nucleotide: value/total for nucleotide,value in choices.items()}
+        chain[key]=porcent
+    return chain 
+
+
+
 def main() -> None:
     """ Run code. """
     
     args = get_args()
-    random.seed(args.seed)
-    return args
+
+    #random.seed(args.seed)
+    for fh in args.file:
+        seq = read_file(fh, frt='fasta')
+        print(read_training(seq=seq[0],k=3))
 
 if __name__ == "__main__":
     main()
