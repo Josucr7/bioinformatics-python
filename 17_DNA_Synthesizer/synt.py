@@ -4,8 +4,11 @@ import argparse
 from typing import NamedTuple, TextIO, List, Optional, Dict
 import random
 from Bio import SeqIO
+from Bio.Seq import Seq
+from Bio.SeqRecord import SeqRecord
 from collections import Counter
 from itertools import chain as ch
+import sys
 
 
 class Args(NamedTuple):
@@ -45,6 +48,7 @@ def get_args() -> Args:
     parse.add_argument('-k', '--kmer',metavar='kmer', type=int, help="Size of k_mer", default=15)
 
     parse.add_argument('-s', '--seed', help='Random seed value', metavar='seed', type=int, default=None)
+
     args = parse.parse_args()
 
     return Args(file=args.file, out_file=args.out_file, frmt=args.frmt, number= args.number, x_max=args.max, m_min=args.min, k_kmer=args.kmer, seed=args.seed)
@@ -61,7 +65,7 @@ def find_kmers(seq: str, k:int) -> List[str]:
     """ Find k-mers in a sequence. """
 
     k_mers = [seq[i:i+k] for i in range(len(seq)-k+1)]
-    return k_mers
+    return [] if len(seq)-k+1 < 1 else k_mers
 
 def read_training(sequences:list[str], k:int) -> Chain:
     """ Tranining sequences, return dict of chains. """
@@ -103,9 +107,15 @@ def gen_seq(chain: Chain, k:int, min_len: int, max_len: int) -> Optional[str]:
             select_nucleotide = random.choices(["A","C","G","T"])
             sequence+=select_nucleotide[0]
 
-    return sequence
+    return sequence if len(sequence) >= min_len else None
 
-
+def write_file(sequences:list[str], outfile:str, fmt: str) -> None:
+    """ Generate a file. """
+    record = []
+    for value, seq in enumerate(filter(None,sequences)):
+        seq_r = SeqRecord(Seq(seq),id=str(value+1),description=f"Sequence {value+1}")
+        record.append(seq_r)
+    SeqIO.write(record,outfile,fmt)
 
 
 def main() -> None:
@@ -113,12 +123,18 @@ def main() -> None:
     
     args = get_args()
 
-    random.seed(args.seed)
+    if args.seed:
+        random.seed(args.seed)
+
     sequences = read_file(args.file, frt=args.frmt)
-    chain = read_training(sequences,k=args.k_kmer)
-    gen_sequence =[gen_seq(chain=chain,k=args.k_kmer+1,min_len=args.m_min,max_len=args.x_max)
-                   for i in range(args.number)]
-    print(gen_sequence)
+
+    if chain := read_training(sequences,k=args.k_kmer):
+        gen_sequence =[gen_seq(chain=chain,k=args.k_kmer+1,min_len=args.m_min,max_len=args.x_max)
+                       for i in range(args.number)]
+        write_file(sequences=gen_sequence,outfile=args.out_file,fmt=args.frmt)
+        print(f'Done, see output in "{args.out_file.name}"')
+    else:
+        sys.exit(f'No {args.k_kmer}-mers in input sequences.')
 
 if __name__ == "__main__":
     main()
