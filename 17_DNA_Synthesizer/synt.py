@@ -5,6 +5,7 @@ from typing import NamedTuple, TextIO, List, Optional, Dict
 import random
 from Bio import SeqIO
 from collections import Counter
+from itertools import chain as ch
 
 
 class Args(NamedTuple):
@@ -12,18 +13,17 @@ class Args(NamedTuple):
 
     file: List[TextIO]
     out_file: TextIO
-    input_format: str
+    frmt: str
     number: int
     x_max: int
     m_min: int
     k_kmer:int
     seed: Optional[int]
 
-class Markov(NamedTuple):
-    """ Machine Learning. """
-    
 
-    
+
+WeightedChoice = Dict[str, float]
+Chain = Dict[str, WeightedChoice]
 
 def get_args() -> Args:
     """ Get command line arguments. """
@@ -34,7 +34,7 @@ def get_args() -> Args:
 
     parse.add_argument('-o','--out_file', metavar='FILE', help="The out_file's name", type=argparse.FileType("wt"), default="out.fa")
 
-    parse.add_argument('-f','--format', metavar='format', type=str, help="Input file format", choices=['fasta', 'fastq'], default="fasta")
+    parse.add_argument('-f','--frmt', metavar='format', type=str, help="Input file format", choices=['fasta', 'fastq'], default="fasta")
 
     parse.add_argument('-n', '--number', metavar='number', type=int, help="Number of sequences to create", default=100)
 
@@ -47,13 +47,14 @@ def get_args() -> Args:
     parse.add_argument('-s', '--seed', help='Random seed value', metavar='seed', type=int, default=None)
     args = parse.parse_args()
 
-    return Args(file=args.file, out_file=args.out_file, input_format=args.format, number= args.number, x_max=args.max, m_min=args.min, k_kmer=args.kmer, seed=args.seed)
+    return Args(file=args.file, out_file=args.out_file, frmt=args.frmt, number= args.number, x_max=args.max, m_min=args.min, k_kmer=args.kmer, seed=args.seed)
 
 
-def read_file(file: TextIO, frt: str)  :
+def read_file(files: list[TextIO], frt: str) -> List[str]:
     """ Read the file depends the format. """
 
-    seq = [str(sequences.seq) for sequences in SeqIO.parse(file,'fasta')]
+    for fh in files:
+        seq = [str(sequences.seq) for sequences in SeqIO.parse(fh,frt)]
     return seq
 
 def find_kmers(seq: str, k:int) -> List[str]:
@@ -62,10 +63,10 @@ def find_kmers(seq: str, k:int) -> List[str]:
     k_mers = [seq[i:i+k] for i in range(len(seq)-k+1)]
     return k_mers
 
-def read_training(seq:str, k:int) -> Dict[str,Dict[str,float]]:
+def read_training(sequences:list[str], k:int) -> Chain:
     """ Tranining sequences, return dict of chains. """
 
-    kmers = find_kmers(seq,k)
+    kmers = list(ch.from_iterable([find_kmers(seq,k) for seq in sequences]))
 
     chain = {}
     for i in range(len(kmers)-1):
@@ -82,6 +83,29 @@ def read_training(seq:str, k:int) -> Dict[str,Dict[str,float]]:
         chain[key]=porcent
     return chain 
 
+def gen_seq(chain: Chain, k:int, min_len: int, max_len: int) -> Optional[str]:
+    """ Generate a sequence. """
+
+    seq_leg = random.randint(min_len,max_len)
+    sequence=''
+    seq_add = random.choice(list(chain.keys()))
+    sequence+=seq_add
+
+    while len(sequence)<seq_leg:
+        prev = sequence[-1*(k-1):]
+        if prev in chain:
+            nucleotide = chain[prev]
+            letter_n = nucleotide.keys()
+            porcent = nucleotide.values()
+            select_nucleotide = random.choices(population=list(letter_n), weights= list(porcent), k=1)
+            sequence+=select_nucleotide[0]
+        else:
+            select_nucleotide = random.choices(["A","C","G","T"])
+            sequence+=select_nucleotide[0]
+
+    return sequence
+
+
 
 
 def main() -> None:
@@ -89,10 +113,12 @@ def main() -> None:
     
     args = get_args()
 
-    #random.seed(args.seed)
-    for fh in args.file:
-        seq = read_file(fh, frt='fasta')
-        print(read_training(seq=seq[0],k=3))
+    random.seed(args.seed)
+    sequences = read_file(args.file, frt=args.frmt)
+    chain = read_training(sequences,k=args.k_kmer)
+    gen_sequence =[gen_seq(chain=chain,k=args.k_kmer+1,min_len=args.m_min,max_len=args.x_max)
+                   for i in range(args.number)]
+    print(gen_sequence)
 
 if __name__ == "__main__":
     main()
