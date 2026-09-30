@@ -37,28 +37,29 @@ def get_args() -> Args:
 
     parse.add_argument('-o','--out_file', metavar='FILE', help="The out_file's name", type=argparse.FileType("wt"), default="out.fa")
 
-    parse.add_argument('-f','--frmt', metavar='format', type=str, help="Input file format", choices=['fasta', 'fastq'], default="fasta")
+    parse.add_argument('-f','--format', metavar='format', type=str, help="Input file format", choices=['fasta', 'fastq'], default="fasta")
 
     parse.add_argument('-n', '--number', metavar='number', type=int, help="Number of sequences to create", default=100)
 
-    parse.add_argument('-x', '--max', metavar='max',help="Maximum sequence length", default=75)
+    parse.add_argument('-x', '--max', metavar='max',help="Maximum sequence length", type= int, default=75)
 
-    parse.add_argument('-m', '--min', metavar='min', type=int, help="Minimum sequence length", default=15)
+    parse.add_argument('-m', '--min', metavar='min', type=int, help="Minimum sequence length", default=50)
     
-    parse.add_argument('-k', '--kmer',metavar='kmer', type=int, help="Size of k_mer", default=15)
+    parse.add_argument('-k', '--kmer',metavar='kmer', type=int, help="Size of k_mer", default=10)
 
     parse.add_argument('-s', '--seed', help='Random seed value', metavar='seed', type=int, default=None)
 
     args = parse.parse_args()
 
-    return Args(file=args.file, out_file=args.out_file, frmt=args.frmt, number= args.number, x_max=args.max, m_min=args.min, k_kmer=args.kmer, seed=args.seed)
+    return Args(file=args.file, out_file=args.out_file, frmt=args.format, number= args.number, x_max=args.max, m_min=args.min, k_kmer=args.kmer, seed=args.seed)
 
 
 def read_file(files: list[TextIO], frt: str) -> List[str]:
     """ Read the file depends the format. """
 
+    seq = []
     for fh in files:
-        seq = [str(sequences.seq) for sequences in SeqIO.parse(fh,frt)]
+        seq.extend(str(record.seq) for record in SeqIO.parse(fh, frt))
     return seq
 
 def find_kmers(seq: str, k:int) -> List[str]:
@@ -113,8 +114,13 @@ def write_file(sequences:list[str], outfile:str, fmt: str) -> None:
     """ Generate a file. """
     record = []
     for value, seq in enumerate(filter(None,sequences)):
-        seq_r = SeqRecord(Seq(seq),id=str(value+1),description=f"Sequence {value+1}")
+        seq_r = SeqRecord(Seq(seq),id=str(value+1),description="")
+
+        if fmt.lower() == 'fastq':
+            seq_r.letter_annotations["phred_quality"] = [40] * len(seq)
+        
         record.append(seq_r)
+    
     SeqIO.write(record,outfile,fmt)
 
 
@@ -123,7 +129,7 @@ def main() -> None:
     
     args = get_args()
 
-    if args.seed:
+    if args.seed is not None:
         random.seed(args.seed)
 
     sequences = read_file(args.file, frt=args.frmt)
