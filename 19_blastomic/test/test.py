@@ -6,8 +6,8 @@ import random
 import string
 import csv
 
-
-PRG = "./blastomatic.py"
+#File ./blast_cv.py or ./blast_panda.py
+PRG = "./blast_panda.py"
 RUN = f"python3 {PRG}" if system() == "Windows" else PRG
 HITS1 = './test/input/hits1.csv'
 HITS2 = './test/input/hits2.csv'
